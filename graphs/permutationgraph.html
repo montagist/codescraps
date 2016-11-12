@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+
+	<head>
+
+	    <title>Network | Groups</title>
+
+	    <style>
+	        body {
+	            color: #d3d3d3;
+	            font: 12pt arial;
+	            background-color: #222222;
+	        }
+
+	        #mynetwork {
+	            width: 100%;
+	            height: 800px;
+	            border: 1px solid #444444;
+	            background-color: #222222;
+	        }
+	    </style>
+
+	    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.js"></script>
+	    <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.16.1/vis.min.css" rel="stylesheet" type="text/css"/>
+
+	</head>
+
+	<body>
+
+		<div id="mynetwork"></div>
+
+		<script type="text/javascript">
+
+	    var color = 'gray';
+	    var len = undefined;
+
+	    var nodes = [],
+	    	edges = [],
+	    	idCount = {},
+	    	group = 0;
+
+
+		function gName( id ) {
+
+			if ( !idCount[ id ] )
+                        	idCount[ id ] = 0;
+
+			return id + "." + ( idCount[ id ]++ );
+		}
+
+		function gLbl( parNode, id ) {
+
+			return parNode.label + "" + id;
+		}
+
+		function permute( arr2perm, parNode ) {
+
+			if ( arr2perm.length == 2 ) {
+
+				if ( parNode ) {
+
+					var secLastName = gName(arr2perm[ 0 ]),
+						lastName = gName(arr2perm[ 1 ]),
+					    sec2lastPerm = { group: parNode.group +1, id: secLastName, label: gLbl( parNode, arr2perm[ 0 ] ) },
+					    lastPerm = { group: sec2lastPerm.group+1, id: lastName, label: sec2lastPerm.label + "" + arr2perm[ 1 ] },
+
+					    sec2lastPermBName = gName(arr2perm[ 0 ]),
+					    lastPermBName = gName(arr2perm[ 1 ]),
+					    lastPermB = { group: parNode.group + 1, id: lastPermBName, label: gLbl( parNode, arr2perm[ 1 ] ) }
+					    sec2lastPermB = { group: lastPermB.group + 1, id: sec2lastPermBName, label: lastPermB.label + "" + arr2perm[ 0 ] };
+
+					//parNode.children.push( sec2lastPerm, lastPerm );
+
+					nodes.push( sec2lastPerm, lastPerm, sec2lastPermB, lastPermB );
+
+					edges.push( { from: parNode.id, to: sec2lastPerm.id },
+								{ from: sec2lastPerm.id, to: lastPerm.id },
+								{ from: parNode.id, to: lastPermB.id },
+								{ from: lastPermB.id, to: sec2lastPermB.id } );
+				}
+				return [ [ arr2perm[ 0 ], arr2perm[ 1 ] ],
+						 [ arr2perm[ 1 ], arr2perm[ 0 ] ] ];
+			}
+
+			var foundPerms = [],
+				newNode;
+
+			for ( var i = 0; i < arr2perm.length; i++ ) {
+
+				if ( i > 0 ) {
+
+					var tmp = arr2perm[ 0 ];
+					arr2perm[ 0 ] = arr2perm[ i ];
+					arr2perm[ i ] = tmp;
+				}
+
+				if ( parNode ) {
+
+					var nodeName = gName(arr2perm[ 0 ]);
+
+					newNode = { group: parNode.group+1,
+								id: nodeName,
+								label: gLbl( parNode, arr2perm[ 0 ] ) };
+
+
+					//parNode.children.push( newNode );
+					nodes.push( newNode );
+
+					edges.push( { from: parNode.id, to: newNode.id } );
+				}
+
+				//group++;
+				var subPerms = permute( arr2perm.slice( 1 ), newNode );
+
+				for ( var subi = 0; subi < subPerms.length; subi++ )
+					foundPerms.push( [ arr2perm[ 0 ] ].concat( subPerms[ subi ] ) );
+
+			}
+			//group--;
+			return foundPerms;
+		}
+
+		var rootNode = { id: "inf", label: "", group: 0 };
+
+		console.log( permute( ["a","b","c","d","e","f","g","h"], rootNode ) );
+
+	    nodes.push( rootNode );
+
+	    // create a network
+	    var container = document.getElementById('mynetwork');
+	    var data = {
+	        nodes: nodes,
+	        edges: edges
+	    };
+
+	    console.log( data );
+
+	    var options = {
+	        nodes: {
+	            shape: 'dot',
+	            size: 30,
+	            font: {
+	                size: 32,
+	                color: '#ffffff'
+	            },
+	            borderWidth: 2
+	        },
+	        edges: {
+	            width: 2
+	        }
+	    };
+
+	    network = new vis.Network(container, data, options);
+
+	</script>
+
+	</body>
+
+</html>
