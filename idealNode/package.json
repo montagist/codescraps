@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "async": "^2.0.1",
+    "bluebird": "^3.4.6",
+    "lodash": "^4.15.0",
+    "pigeonkeeper": "^0.10.11"
+  },
+  "devDependencies": {
+    "mocha": "^3.0.2",
+    "mock-fs": "^3.11.0"
+  }
+}
